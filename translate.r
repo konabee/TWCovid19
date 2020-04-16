@@ -54,11 +54,11 @@ twcovidw$Age[twcovidw$Age=='60-64']<-60
 twcovidw$Age[twcovidw$Age=='65-69']<-65
 twcovidw$Age[twcovidw$Age=='70+']<-70
 
-## Create AgeInt ##
+## Create AgeInt, age interval, with highest age set as 105 ##
 twcovidw$AgeInt<-ifelse(twcovidw$Age==70, 35, 5)
 
 ## change week to date by Taiwan CDC's specification, using file provided by Taiwan's CDC ## 
-## same date for beginning of week as Scotland (Monday rather than Sunday) ##
+## beginning of week set to Monday rather than Sunday ##
 wdates<-read_excel('sourcefiles/weekdate.xls') %>% slice(8399:n()) %>% select(-c('year'))
 wdatesshort<-wdates[seq(1,nrow(wdates),7),]
 wdatesshort$date<-format(as.Date(wdatesshort$date), '%d.%m.%Y')
