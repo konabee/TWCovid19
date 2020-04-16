@@ -82,7 +82,7 @@ l <- gather(twcovidw2, Measure, Value, Cases, factor_key=T)
 ## https://www.twreporter.org/i/covid-2019-keep-tracking-gcs ##
 
 ## Case number 19 (62 male, died 25.02.20), 27 (80+ male, died 20.03.20), 34 (50+ female, 30.03.20), ##
-## Case numer 108 (40+ male), died 29.03.20), 170 (60+ male, died 29.03.20)in Taiwan, ##
+## Case numer 108 (40+ male), died 29.03.20), 170 (60+ male, died 29.03.20), ##
 ## Case number 101 (70+ male, 09.04.20)  ## 
 ## upper bound of age group used when unspecified, such as 55 for 50+ and 65 for 60+ ## 
 
