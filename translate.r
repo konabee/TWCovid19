@@ -1,4 +1,4 @@
-## This file was written by Chia Liu, for a larger, collaborative project documenting COVID 19 cases and deaths globally (April 15, 2020) ## 
+## This file was written by Chia Liu, for a larger, collaborative project documenting COVID 19 cases and deaths globally by age (April 15, 2020) ## 
 
 library(tidyverse)
 library(readxl)
