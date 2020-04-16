@@ -6,7 +6,7 @@ The Epidemic Intelligence Center at Taiwan's Centers for Disease Control collect
 For Taiwan's data, the following has been done: 
 1. All labels and variables have been translated from Chinese to English.
 2. Weeks have been matched to dates (with the first day of the week set as Monday) in accordance to WHO specification, with the source file for week/date provided by Taiwan's CDC. 
-3. Taiwan so far has had 6 COVID deaths (as of April 15, 2020), but the demographic characteristics of the deceased have not been released by Taiwan's CDC. These six cases have been entered manually into the data base, using various news sources. For those whose age have only been roughly identified by the media, the upper bound of the 5-year age group is used (for example, 50+ is categorized as 55-60).   
+3. Taiwan so far has had 6 COVID deaths (as of April 15, 2020), but the demographic characteristics of the deceased have not been released by Taiwan's CDC. These six cases have been entered manually into the data base, using various news sources. For those whose age have only been roughly identified by the media, the upper bound of the 5-year age group is used (for example, 50+ is categorized as 55-59).   
 * https://healthmedia.com.tw/main_detail.php?id=45372 
 * https://www.cdc.gov.tw/Bulletin/Detail/C7SfkryzIXWf0eF_1O03hw?typeid=9
 * https://www.storm.mg/article/2461485
