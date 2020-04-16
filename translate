@@ -4,7 +4,7 @@ library(readxl)
 ## weekly data source: (https://data.cdc.gov.tw/en/dataset/aagstable-weekly-19cov) ##
 ## monthly data source: (https://data.cdc.gov.tw/en/dataset/aagstable-19cov) ##
 
-twcovidw<-read_excel('C:/Users/Chia/Desktop/TW/Age_County_Gender_19Cov.xlsx', sheet='ByWeek')
+twcovidw<-read_excel('sourcefiles/Age_County_Gender_19Cov.xlsx', sheet='ByWeek')
 
 ## translate variables ##
 colnames(twcovidw)<-c('Diagnosis','Year','week','Region','Sex','RecentTravelAbroad','Age','Cases')
