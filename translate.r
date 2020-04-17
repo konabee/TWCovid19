@@ -105,8 +105,7 @@ l2<-gather(mort,Measure,Value,Deaths,factor_key =T)
 lall<-rbind(l,l2)
 
 ## change M/F to m/f for sex ##
-lall$Sex[lall$Sex=='M']<-'m'
-lall$Sex[lall$Sex=='F']<-'f'
+lall$Sex<-tolower(lall$Sex)
 
 ## re-order columns ##
 lall<-lall[,c(7,2,8,6,3,4,5,9,10,11)]
