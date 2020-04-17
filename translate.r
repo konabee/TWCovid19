@@ -86,16 +86,16 @@ l <- gather(twcovidw2, Measure, Value, Cases, factor_key=T)
 ## Case number 101 (70+ male, 09.04.20)  ## 
 ## upper bound of age group used when unspecified, such as 55 for 50+ and 65 for 60+ ## 
 
-Year<-c(2020,2020,2020,2020,2020,2020)
-Region<-c('All','All','All','All','All','All')
+Year<-rep(c(2020),times=6)
+Region<-rep(c('All'),times=6)
 Sex<-c('M','M','F','M','M','M')
 Age<-c('60','70+','55','45','65','70+')
-Deaths<-c(1,1,1,1,1,1)
+Deaths<-rep(c(1), times=6)
 AgeInt<-c(5,35,5,5,5,35)
 Date<-c('02.03.2020','16.03.2020','30.03.2020','23.03.2020','23.03.2020','06.04.2020')
-Country<-c('Taiwan','Taiwan','Taiwan','Taiwan','Taiwan','Taiwan')
-Code<-c('TW02.03.2020','TW16.03.2020','TW30.03.2020','TW23.03.2020','TW23.03.2020','TW06.04.2020')
-Metric<-c('Count','Count','Count','Count','Count','Count')
+Country<-rep(c('Taiwan'),times=6)
+Code<-paste0('TW',Date)
+Metric<-rep(c('Count'), times=6)
 
 mort<-data.frame(Year,Region,Sex,Age,Deaths,AgeInt,Date,Country,Code,Metric)
 
