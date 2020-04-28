@@ -1,15 +1,16 @@
+## File updated on April 28, 2020 by CL ## 
+
 ## This file was written by Chia Liu, for a collaborative project documenting COVID 19 cases and deaths globally by age (April 15, 2020) ## 
 
 library(tidyverse)
 library(readxl)
 
-## weekly data source: (https://data.cdc.gov.tw/en/dataset/aagstable-weekly-19cov) ##
-## monthly data source: (https://data.cdc.gov.tw/en/dataset/aagstable-19cov) ##
+## data source: https://data.cdc.gov.tw/download?resourceid=3c1e263d-16ec-4d70-b56c-21c9e2171fc7&dataurl=https://od.cdc.gov.tw/eic/Day_Confirmation_Age_County_Gender_19CoV.csv ##
 
-twcovidw<-read_excel('sourcefiles/Age_County_Gender_19Cov.xlsx', sheet='ByWeek')
+twcovidw<-read_excel('Day_Confirmation_Age_County_Gender_19CoV.xlsx')
 
 ## translate variables ##
-colnames(twcovidw)<-c('Diagnosis','Year','week','Region','Sex','RecentTravelAbroad','Age','Cases')
+colnames(twcovidw)<-c('Diagnosis','date','Region','Sex','RecentTravelAbroad','Age','Cases')
 
 ## drop RecentTravelAbroad ##
 twcovidw<-select(twcovidw,-c('RecentTravelAbroad'))
@@ -35,8 +36,11 @@ twcovidw$Region[twcovidw$Region=='苗栗縣']<-'Miaoli County'
 twcovidw$Region[twcovidw$Region=='雲林縣']<-'Yunlin County'
 twcovidw$Region[twcovidw$Region=='高雄市']<-'Kaohsiung City'
 
-# twcovidw$RecentTravelAbroad[twcovidw$RecentTravelAbroad=='是']<-'yes'
-# twcovidw$RecentTravelAbroad[twcovidw$RecentTravelAbroad=='否']<-'no'
+#twcovidw$RecentTravelAbroad[twcovidw$RecentTravelAbroad=='是']<-'yes'
+#twcovidw$RecentTravelAbroad[twcovidw$RecentTravelAbroad=='否']<-'no'
+
+twcovidw$Sex[twcovidw$Sex=='男']<-'m'
+twcovidw$Sex[twcovidw$Sex=='女']<-'f'
 
 twcovidw$Age[twcovidw$Age=='4']<-0
 twcovidw$Age[twcovidw$Age=='5-9']<-5
@@ -54,27 +58,30 @@ twcovidw$Age[twcovidw$Age=='60-64']<-60
 twcovidw$Age[twcovidw$Age=='65-69']<-65
 twcovidw$Age[twcovidw$Age=='70+']<-70
 
-## Create AgeInt, age interval, with highest age set as 105 ##
+## Create AgeInt ##
 twcovidw$AgeInt<-ifelse(twcovidw$Age==70, 35, 5)
 
-## change week to date by Taiwan CDC's specification, using file provided by Taiwan's CDC ## 
-## beginning of week set to Monday rather than Sunday ##
-wdates<-read_excel('sourcefiles/weekdate.xls') %>% slice(8399:n()) %>% select(-c('year'))
-wdatesshort<-wdates[seq(1,nrow(wdates),7),]
-wdatesshort$date<-format(as.Date(wdatesshort$date), '%d.%m.%Y')
-wdatesshort$week<-as.numeric(as.character(wdatesshort$week))
+## change date format ## 
+twcovidw$Date<-format(as.Date(twcovidw$date),'%d.%m.%Y') 
 
-twcovidw<-left_join(twcovidw,wdatesshort, by='week')
-colnames(twcovidw)[9]<-'Date'
+## add ISO-3 code ##
+
+iso<-read_csv('ISO3.csv')
+
+twcovidw<-left_join(twcovidw,iso,by='Region')
 
 ## make/keep only useful columns ## 
 twcovidw$Country<-'Taiwan'
-twcovidw$Code<-paste0('TW',twcovidw$Date)
+twcovidw$Code<-paste0('TW','_',twcovidw$iso3,'_',twcovidw$date)
 twcovidw$Metric<-'Count'
-twcovidw2<-select(twcovidw,-c('Diagnosis','week'))
+twcovidw<-select(twcovidw,-c('Diagnosis','date','iso3'))
 
 ## reshape ## 
-l <- gather(twcovidw2, Measure, Value, Cases, factor_key=T)
+l <- gather(twcovidw, Measure, Value, Cases, factor_key=T)
+
+## order columns ## 
+colorder<-c('Country','Region','Code','Date','Sex','Age','AgeInt','Metric','Measure','Value')
+l<-l[,colorder]
 
 ## manually add deaths (6) from news source: https://healthmedia.com.tw/main_detail.php?id=45372 ## 
 ## https://www.cdc.gov.tw/Bulletin/Detail/C7SfkryzIXWf0eF_1O03hw?typeid=9 ##
@@ -82,7 +89,7 @@ l <- gather(twcovidw2, Measure, Value, Cases, factor_key=T)
 ## https://www.twreporter.org/i/covid-2019-keep-tracking-gcs ##
 
 ## Case number 19 (62 male, died 25.02.20), 27 (80+ male, died 20.03.20), 34 (50+ female, 30.03.20), ##
-## Case numer 108 (40+ male), died 29.03.20), 170 (60+ male, died 29.03.20), ##
+## Case numer 108 (40+ male), died 29.03.20), 170 (60+ male, died 29.03.20)in Taiwan, ##
 ## Case number 101 (70+ male, 09.04.20)  ## 
 ## upper bound of age group used when unspecified, such as 55 for 50+ and 65 for 60+ ## 
 
@@ -100,15 +107,10 @@ Metric<-rep(c('Count'), times=6)
 mort<-data.frame(Year,Region,Sex,Age,Deaths,AgeInt,Date,Country,Code,Metric)
 
 l2<-gather(mort,Measure,Value,Deaths,factor_key =T)
+l2<-l2[,colorder]
 
 ## glue l and l2 together ## 
 lall<-rbind(l,l2)
 
-## change M/F to m/f for sex ##
-lall$Sex<-tolower(lall$Sex)
-
-## re-order columns ##
-lall<-lall[,c(7,2,8,6,3,4,5,9,10,11)]
-
 ## output ## 
-write.csv(lall, 'tw0415.csv')
+write.csv(lall, 'tw0428.csv')
