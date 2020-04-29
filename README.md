@@ -14,5 +14,5 @@ For Taiwan's data, the following has been done:
 
 
 ## update 04.28.2020 ##
-Taiwan CDC updated their source file on April 24th of 2020. https://data.cdc.gov.tw/dataset/agsdctable-day-19cov#
+Taiwan CDC updated their source file on April 25th of 2020. https://data.cdc.gov.tw/dataset/agsdctable-day-19cov#
 Code and source files are updated here accordingly.
