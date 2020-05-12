@@ -7,7 +7,7 @@ library(readxl)
 
 ## data source: https://data.cdc.gov.tw/download?resourceid=3c1e263d-16ec-4d70-b56c-21c9e2171fc7&dataurl=https://od.cdc.gov.tw/eic/Day_Confirmation_Age_County_Gender_19CoV.csv ##
 
-twcovidw<-read_csv('C:/Users/Chia/Desktop/TW/Weekly_Confirmation_Age_County_Gender_19CoV.csv') %>% select(-c(1,2,6))
+twcovidw<-read_csv('/Weekly_Confirmation_Age_County_Gender_19CoV.csv') %>% select(-c(1,2,6))
 
 ## translate variables ##
 colnames(twcovidw)<-c('week','Region','Sex','Age','Cases')
