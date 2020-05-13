@@ -1,13 +1,13 @@
 ## File updated on May 12, 2020 by CL ## 
 
-## This file was written by Chia Liu, for a collaborative project documenting COVID 19 cases and deaths globally by age (April 15, 2020) ## 
+## This file was written by Chia Liu, for a collaborative project documenting COVID 19 cases and deaths globally by age ## 
 
 library(tidyverse)
 library(readxl)
 
 ## data source: https://data.cdc.gov.tw/download?resourceid=3c1e263d-16ec-4d70-b56c-21c9e2171fc7&dataurl=https://od.cdc.gov.tw/eic/Day_Confirmation_Age_County_Gender_19CoV.csv ##
 
-twcovidw<-read_csv('/Weekly_Confirmation_Age_County_Gender_19CoV.csv') %>% select(-c(1,2,6))
+twcovidw<-read_csv('Weekly_Confirmation_Age_County_Gender_19CoV.csv') %>% select(-c(1,2,6))
 
 ## translate variables ##
 colnames(twcovidw)<-c('week','Region','Sex','Age','Cases')
@@ -71,8 +71,8 @@ twcovidwnew<-select(twcovidwnew,-c('uniqueid','Sex.x','Region.x','Age.x','week')
 twcovidwnew$AgeInt<-ifelse(twcovidwnew$Age==70, 35, 5)
 
 ## change week to date by Taiwan CDC's specification, using file provided by Taiwan's CDC ## 
-## same date for beginning of week as Scotland (Monday rather than Sunday) ##
-wdates<-read_excel('C:/Users/Chia/Desktop/TW/weekdate.xls') %>% slice(8399:n()) %>% select(-c('Year'))
+## Monday as the beginning of the week (rather than Sunday) ##
+wdates<-read_excel('weekdate.xls') %>% slice(8399:n()) %>% select(-c('Year'))
 wdatesshort<-wdates[seq(1,nrow(wdates),7),]
 wdatesshort$Date<-format(as.Date(wdatesshort$Date), '%d.%m.%Y')
 wdatesshort$Week<-as.numeric(as.character(wdatesshort$Week))
