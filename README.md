@@ -14,11 +14,11 @@ For Taiwan's data, the following has been done:
 * https://www.twreporter.org/i/covid-2019-keep-tracking-gcs 
 
 
-## update 04.28.2020 ##
+## update 28.04.2020 ##
 Taiwan CDC updated their source file on April 25th of 2020. https://data.cdc.gov.tw/dataset/agsdctable-day-19cov#
 Code and source files are updated here accordingly.
 
-## update 05.12.2020 ## 
+## update 12.05.2020 ## 
 Code and source files have been updated, and one death has been added 
 
 ## update 14.05.2020 ## 
