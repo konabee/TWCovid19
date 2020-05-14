@@ -5,9 +5,9 @@ The Epidemic Intelligence Center at Taiwan's Centers for Disease Control collect
 
 For Taiwan's data, the following has been done: 
 1. All labels and variables have been translated from Chinese to English.
-2. To ensure comparability, I expanded the data to include all possible combination of week(16), region(22), sex(2), age group(15), totaling 10560 rows for data on CASES of COVID 19 (not deaths). Those rows that did not experience a case are padded with zeroes. Therefore, although data by day is available, I used weekly data to avoid having to pad the data with too many rows of zeroes.  
+2. I expanded the data to include all possible combination of week(16), region(22), sex(2), age group(15), totaling 10560 rows for data on CASES of COVID 19 (not deaths). Those rows that did not experience a case are padded with zeroes. Therefore, although data by day is available, I used weekly data to avoid having to pad the data with too many rows of zeroes.  The code for this is "translate.r".
 3. Weeks have been matched to dates (with the first day of the week set as Monday) in accordance to WHO specification, with the source file for week/date provided by Taiwan's CDC. 
-4. Taiwan so far has had 7 COVID deaths (as of May 12, 2020), but the demographic characteristics of the deceased have not been released by Taiwan's CDC. These seven cases have been entered manually into the data base, using various news sources. For those whose age have only been roughly identified by the media, the upper bound of the 5-year age group is used (for example, 50+ is categorized as 55-59).   
+4. Taiwan so far has had 7 COVID deaths (as of May 12, 2020), but the demographic characteristics of the deceased have not been released by Taiwan's CDC. These seven cases have been entered manually into the data base, using various news sources. For those whose age have only been roughly identified by the media, the upper bound of the 5-year age group is used (for example, 50+ is categorized as 55-59). This is not expanded for the region file ("translate.r") but is expanded for all possible combination of age,sex, and weeks in the "translate_noregion.r" file.   
 * https://healthmedia.com.tw/main_detail.php?id=45372 
 * https://www.cdc.gov.tw/Bulletin/Detail/C7SfkryzIXWf0eF_1O03hw?typeid=9
 * https://www.storm.mg/article/2461485
@@ -20,3 +20,6 @@ Code and source files are updated here accordingly.
 
 ## update 05.12.2020 ## 
 Code and source files have been updated, and one death has been added 
+
+## update 14.05.2020 ## 
+Code separated into "translate.r" (all regions for cases, no padding for deaths, 10567 rows) and "translate_noregion.r" (country level expansion for both cases and deaths, 960 rows).  Cumulative instead of daily count. 
