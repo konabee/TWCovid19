@@ -1,4 +1,6 @@
-## Cumulative COVID 19 Cases and Deaths, for all Regions in Taiwan, by Age group, Sex and Week ##
+## This file is written by Chia Liu for the COVerAGE DB project, last updated 14.05.2020 ##
+
+## Cumulative COVID 19 Cases and Deaths, for ALL Regions in Taiwan, by Age group, Sex and Week ##
 
 library(tidyverse)
 library(readxl)
@@ -72,7 +74,7 @@ twnew$AgeInt<-ifelse(twnew$Age==70,35,5)
 
 ## change week to date of the Monday of the week by Taiwan CDC's specification, using file provided by Taiwan's CDC ## 
 ## same date for beginning of week as Scotland (Monday rather than Sunday) ##
-wdates<-read_excel('C:/Users/Chia/Desktop/TW/weekdate.xls') %>% slice(8399:n()) %>% select(-c('Year'))
+wdates<-read_excel('weekdate.xls') %>% slice(8399:n()) %>% select(-c('Year'))
 wdatesshort<-wdates[seq(1,nrow(wdates),7),]
 wdatesshort$Date<-format(as.POSIXct(wdatesshort$Date), '%d.%m.%Y') %>% lubridate::dmy()
 wdatesshort$Week<-as.numeric(as.character(wdatesshort$Week))
