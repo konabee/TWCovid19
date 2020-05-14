@@ -1,11 +1,13 @@
-## File updated on May 12, 2020 by CL ## 
+## Written then updated by Chia Liu, on 14.05.2020 ## 
 
-## This file was written by Chia Liu, for a collaborative project documenting COVID 19 cases and deaths globally by age ## 
+
+## not used for COVerAGE DB but perhaps useful to those interested in regional level data ##
+
 
 library(tidyverse)
 library(readxl)
 
-## data source: https://data.cdc.gov.tw/download?resourceid=3c1e263d-16ec-4d70-b56c-21c9e2171fc7&dataurl=https://od.cdc.gov.tw/eic/Day_Confirmation_Age_County_Gender_19CoV.csv ##
+## COVID 19 cases ## 
 
 twcovidw<-read_csv('Weekly_Confirmation_Age_County_Gender_19CoV.csv') %>% select(-c(1,2,6))
 
@@ -53,7 +55,12 @@ twcovidw$Age[twcovidw$Age=='70+']<-70
 ## change M/F to m/f for sex ##
 twcovidw$Sex<-tolower(twcovidw$Sex)
 
-## pad with rows of zeroes for weeks/regions/sex/age with no cases ## 
+## add ISO-3 code ##
+iso<-read_csv('ISO3.csv')
+twcovidw<-left_join(twcovidw,iso,by='Region')
+
+
+## pad with rows of zeroes for weeks/sex/age with no cases ## 
 Sex<-c('m','f')
 Age<-unique(twcovidw$Age) %>% as.numeric()
 Week<-c(4:19)
@@ -63,27 +70,20 @@ names(fake)<-c('Sex','Age','Week','Region')
 fake$uniqueid<-paste0(fake$Sex,fake$Age,fake$Week,fake$Region)
 
 twcovidw$uniqueid<-paste0(twcovidw$Sex, twcovidw$Age, twcovidw$week, twcovidw$Region)
-twcovidwnew<-right_join(twcovidw, fake, by='uniqueid') 
-## rows exceed expand grid dataframe because of duplicate rows due to tw cdc separating rows for external and internal transmission ##
+twcovidwnew<-right_join(twcovidw, fake, by='uniqueid') ## rows exceed expand grid dataframe because duplicate rows due to tw cdc separating rows for external and internal transmission ##
 twcovidwnew<-select(twcovidwnew,-c('uniqueid','Sex.x','Region.x','Age.x','week')) %>% rename(Sex=Sex.y, Region=Region.y, Age=Age.y)
-
 ## Create AgeInt ##
 twcovidwnew$AgeInt<-ifelse(twcovidwnew$Age==70, 35, 5)
 
 ## change week to date by Taiwan CDC's specification, using file provided by Taiwan's CDC ## 
-## Monday as the beginning of the week (rather than Sunday) ##
+## same date for beginning of week as Scotland (Monday rather than Sunday) ##
 wdates<-read_excel('weekdate.xls') %>% slice(8399:n()) %>% select(-c('Year'))
 wdatesshort<-wdates[seq(1,nrow(wdates),7),]
 wdatesshort$Date<-format(as.Date(wdatesshort$Date), '%d.%m.%Y')
 wdatesshort$Week<-as.numeric(as.character(wdatesshort$Week))
 twcovidwnew<-left_join(twcovidwnew,wdatesshort, by='Week')
-colnames(twcovidw)[6]<-'Date'
 
-## add ISO-3 code ##
-iso<-read_csv('ISO3.csv')
-twcovidwnew<-left_join(twcovidwnew,iso, by='Region')
-
-## Create columns ## 
+## Create extra columns ## 
 twcovidwnew$Country<-'Taiwan'
 twcovidwnew$Year<-c(2020)
 twcovidwnew$Code<-paste0('TW','_',twcovidwnew$iso3,'_',twcovidwnew$Date)
@@ -94,9 +94,12 @@ twcovidwnew$Cases[is.na(twcovidwnew$Cases)]<-0
 
 ## reshape ## 
 l <- gather(twcovidwnew, Measure, Value, Cases, factor_key=T)
+l <- l %>% group_by(Country, Year, Code, Region, Date, Sex, Age, AgeInt, Metric, Measure)%>% summarise(Value=sum(Value)) ## here we get rid of the duplicate rows ## 
 
-## here we get rid of the duplicate rows ## 
-l <- l %>% group_by(Country, Year, Code, Region, Date, Sex, Age, AgeInt, Metric, Measure)%>% summarise(Value=sum(Value)) 
+## cumulative cases ## 
+l <-l %>% group_by(Sex, Age) %>% mutate(Value=cumsum(Value))
+
+## COVID 19 Deaths ## 
 
 ## manually add deaths (6) from news source: https://healthmedia.com.tw/main_detail.php?id=45372 ## 
 ## https://www.cdc.gov.tw/Bulletin/Detail/C7SfkryzIXWf0eF_1O03hw?typeid=9 ##
@@ -106,10 +109,9 @@ l <- l %>% group_by(Country, Year, Code, Region, Date, Sex, Age, AgeInt, Metric,
 ## Case number 19 (62 male, died 25.02.20), 27 (80+ male, died 20.03.20), 34 (50+ female, 30.03.20), ##
 ## Case numer 108 (40+ male), died 29.03.20), 170 (60+ male, died 29.03.20)in Taiwan, ##
 ## Case number 101 (70+ male, 09.04.20, 197 (40+ male)  ## 
-
 ## upper bound of age group used when unspecified, such as 55 for 50+ and 65 for 60+ ## 
 
-Year<-rep(c(2020),times=7)
+
 Region<-rep(c('All'),times=7)
 Sex<-c('m','m','f','m','m','m','m')
 Age<-c(60,70,55,45,65,70,45)
@@ -120,9 +122,15 @@ Country<-rep(c('Taiwan'),times=7)
 Code<-paste0('TW',Date)
 Metric<-rep(c('Count'), times=7)
 
-mort<-data.frame(Year,Region,Sex,Age,Deaths,AgeInt,Date,Country,Code,Metric)
+mort<-data.frame(Region,Sex,Age,Deaths,AgeInt,Date,Country,Code,Metric)
+
+
+## cannot expand this by region, because we do not have region level data for deaths. See translate_noregion.r for country level expansion## 
 
 l2<-gather(mort,Measure,Value,Deaths,factor_key =T)
+
+## cumulative deaths ## 
+l2 <-l2 %>% group_by(Sex, Age) %>% mutate(Value=cumsum(Value))
 
 ## glue l and l2 together ## 
 lall<-rbind(l,l2)
@@ -130,7 +138,3 @@ lall<-rbind(l,l2)
 ## re-order columns ##
 colorder<-c('Country','Region','Code','Date','Sex','Age','AgeInt','Metric','Measure','Value')
 lall<-lall[,colorder]
-
-## output ## 
-googlesheets4::sheet_write(lall,ss="https://docs.google.com/spreadsheets/d/1NVmyknEZnEwiZvxwfFCHhkvuW9VH5NBqBf1cXX82I_M/edit#gid=1079196673",sheet = "database")
-
