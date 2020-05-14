@@ -2,16 +2,15 @@
 
 library(tidyverse)
 library(readxl)
-setwd('C:/Users/Chia/Desktop/TW')
 
 ## COVID 19 cases ## 
 
-twcovidw<-read_csv('C:/Users/Chia/Desktop/TW/Weekly_Confirmation_Age_County_Gender_19CoV.csv') %>% select(-c(1,2,6))
+twcovidw<-read_csv('Weekly_Confirmation_Age_County_Gender_19CoV.csv') %>% select(-c(1,2,6))
 
 ## translate variables ##
 colnames(twcovidw)<-c('Week','Region','Sex','Age','Cases')
 
-## translate values ##
+## translate values (although not used in this file) ## 
 
 twcovidw$Region[twcovidw$Region=='南投縣']<-'Nantou County'
 twcovidw$Region[twcovidw$Region=='台中市']<-'Taichung City'
@@ -50,7 +49,7 @@ twcovidw$Age[twcovidw$Age=='70+']<-70
 ## change M/F to m/f for sex ##
 twcovidw$Sex<-tolower(twcovidw$Sex)
 
-## collapse regions into just Taiwan ## 
+## collapse regions into just Taiwan, get rid of Region ## 
 twshort<-twcovidw %>% group_by(Week, Sex, Age) %>% summarise(Cases=sum(Cases)) 
 
 ## create fake data to expand ##
