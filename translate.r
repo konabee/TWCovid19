@@ -1,140 +1,83 @@
-## Written then updated by Chia Liu, on 14.05.2020 ## 
-
-
-## not used for COVerAGE DB but perhaps useful to those interested in regional level data ##
-
+## Written then updated by Chia Liu, on 03.06.2021 ## 
 
 library(tidyverse)
 library(readxl)
 
-## COVID 19 cases ## 
+## COVID 19 cases ##
+## read data from Taiwan CDC website ## 
 
-twcovidw<-read_csv('Weekly_Confirmation_Age_County_Gender_19CoV.csv') %>% select(-c(1,2,6))
+twcovidw<-read_csv('https://data.cdc.gov.tw/download?resourceid=a49ab31a-4711-4064-b2f0-216228a7cefc&dataurl=https://od.cdc.gov.tw/eic/Weekly_Age_County_Gender_19CoV.csv') %>% 
+  select(-c(1,5,7))
 
 ## translate variables ##
-colnames(twcovidw)<-c('week','Region','Sex','Age','Cases')
+colnames(twcovidw)<-c('Year','Week','Place','Sex','Age','Cases')
+head(twcovidw)
 
-## translate values ##
-
-twcovidw$Region[twcovidw$Region=='南投縣']<-'Nantou County'
-twcovidw$Region[twcovidw$Region=='台中市']<-'Taichung City'
-twcovidw$Region[twcovidw$Region=='台北市']<-'Taipei City'
-twcovidw$Region[twcovidw$Region=='台南市']<-'Tainan City'
-twcovidw$Region[twcovidw$Region=='嘉義市']<-'Chiayi City'
-twcovidw$Region[twcovidw$Region=='嘉義縣']<-'Chiayi County'
-twcovidw$Region[twcovidw$Region=='基隆市']<-'Keelung City'
-twcovidw$Region[twcovidw$Region=='宜蘭縣']<-'Yilan County'
-twcovidw$Region[twcovidw$Region=='屏東縣']<-'Pingtung County'
-twcovidw$Region[twcovidw$Region=='彰化縣']<-'Changhua County'
-twcovidw$Region[twcovidw$Region=='新北市']<-'New Taipei City'
-twcovidw$Region[twcovidw$Region=='新竹市']<-'Hsinchu City'
-twcovidw$Region[twcovidw$Region=='新竹縣']<-'Hsinchu County'
-twcovidw$Region[twcovidw$Region=='桃園市']<-'Taoyuan City'
-twcovidw$Region[twcovidw$Region=='苗栗縣']<-'Miaoli County'
-twcovidw$Region[twcovidw$Region=='雲林縣']<-'Yunlin County'
-twcovidw$Region[twcovidw$Region=='高雄市']<-'Kaohsiung City'
-
-twcovidw$Age[twcovidw$Age=='4']<-0
-twcovidw$Age[twcovidw$Age=='5-9']<-5
-twcovidw$Age[twcovidw$Age=='10-14']<-10
-twcovidw$Age[twcovidw$Age=='15-19']<-15
-twcovidw$Age[twcovidw$Age=='20-24']<-20
-twcovidw$Age[twcovidw$Age=='25-29']<-25
-twcovidw$Age[twcovidw$Age=='30-34']<-30
-twcovidw$Age[twcovidw$Age=='35-39']<-35
-twcovidw$Age[twcovidw$Age=='40-44']<-40
-twcovidw$Age[twcovidw$Age=='45-49']<-45
-twcovidw$Age[twcovidw$Age=='50-54']<-50
-twcovidw$Age[twcovidw$Age=='55-59']<-55
-twcovidw$Age[twcovidw$Age=='60-64']<-60
-twcovidw$Age[twcovidw$Age=='65-69']<-65
-twcovidw$Age[twcovidw$Age=='70+']<-70
-
-
-## lower case m/f
+## recode age ##
 ## change M/F to m/f for sex ##
-twcovidw$Sex<-tolower(twcovidw$Sex)
+twcovidw<-twcovidw %>% mutate (
+  Sex=tolower(Sex),
+    Age = case_when(
+               Age %in% c('0','1','2','3','4') ~ 0,
+               Age=='5-9' ~ 5,
+               Age=='10-14' ~ 10,
+               Age=='15-19' ~ 15,
+               Age=='20-24' ~ 20,
+               Age=='25-29' ~ 25,
+               Age=='30-34' ~ 30,
+               Age=='35-39' ~ 35,
+               Age=='40-44' ~ 40,
+               Age=='45-49' ~ 45,
+               Age=='50-54' ~ 50,
+               Age=='55-59' ~ 55,
+               Age=='60-64' ~ 60,
+               Age=='65-69' ~ 65,
+               Age=='70+' ~ 70))
 
-## add ISO-3 code ##
-iso<-read_csv('ISO3.csv')
-twcovidw<-left_join(twcovidw,iso,by='Region')
+## collapse geography into national total ## 
+twshort<-twcovidw %>% group_by(Year,Week, Sex, Age) %>% summarise(Cases=sum(Cases)) 
+twshort$Week<-paste0(twshort$Year,twshort$Week)
 
-
-## pad with rows of zeroes for weeks/sex/age with no cases ## 
+## create fake data to expand ##
 Sex<-c('m','f')
-Age<-unique(twcovidw$Age) %>% as.numeric()
-Week<-c(4:19)
-Region<-unique(iso$Region) 
-fake<-expand.grid(Sex,Age,Week,Region)
-names(fake)<-c('Sex','Age','Week','Region')
-fake$uniqueid<-paste0(fake$Sex,fake$Age,fake$Week,fake$Region)
+Age<-unique(twshort$Age) %>% as.numeric()
+Year<-c(2020,2021)
+Week<-c(1:53) %>% as.numeric()
 
-twcovidw$uniqueid<-paste0(twcovidw$Sex, twcovidw$Age, twcovidw$week, twcovidw$Region)
-twcovidwnew<-right_join(twcovidw, fake, by='uniqueid') ## rows exceed expand grid dataframe because duplicate rows due to tw cdc separating rows for external and internal transmission ##
-twcovidwnew<-select(twcovidwnew,-c('uniqueid','Sex.x','Region.x','Age.x','week')) %>% rename(Sex=Sex.y, Region=Region.y, Age=Age.y)
-## Create AgeInt ##
-twcovidwnew$AgeInt<-ifelse(twcovidwnew$Age==70, 35, 5)
+fake<-expand.grid(Sex,Age,Week,Year)
+names(fake)<-c('Sex','Age','Week','Year')
+fake$Week<-paste0(fake$Year,fake$Week)
+fake$uniqueid<-paste0(fake$Sex,fake$Age,fake$Week)
+fake<-fake %>% select(Year,Week,Sex,Age,uniqueid)
 
-## change week to date by Taiwan CDC's specification, using file provided by Taiwan's CDC ## 
-## same date for beginning of week as Scotland (Monday rather than Sunday) ##
-wdates<-read_excel('weekdate.xls') %>% slice(8399:n()) %>% select(-c('Year'))
-wdatesshort<-wdates[seq(1,nrow(wdates),7),]
-wdatesshort$Date<-format(as.Date(wdatesshort$Date), '%d.%m.%Y')
-wdatesshort$Week<-as.numeric(as.character(wdatesshort$Week))
-twcovidwnew<-left_join(twcovidwnew,wdatesshort, by='Week')
-
-## Create extra columns ## 
-twcovidwnew$Country<-'Taiwan'
-twcovidwnew$Year<-c(2020)
-twcovidwnew$Code<-paste0('TW','_',twcovidwnew$iso3,'_',twcovidwnew$Date)
-twcovidwnew$Metric<-'Count'
+twshort$uniqueid<-paste0(twshort$Sex,twshort$Age,twshort$Week)
+twnew<-right_join(twshort[,5:6],fake,by='uniqueid') %>% select(-c('uniqueid')) %>% arrange(Week)
 
 ## change NA to 0 ## 
-twcovidwnew$Cases[is.na(twcovidwnew$Cases)]<-0
+twnew$Cases[is.na(twnew$Cases)]<-0
 
-## reshape ## 
-l <- gather(twcovidwnew, Measure, Value, Cases, factor_key=T)
-l <- l %>% group_by(Country, Year, Code, Region, Date, Sex, Age, AgeInt, Metric, Measure)%>% summarise(Value=sum(Value)) ## here we get rid of the duplicate rows ## 
+## create AgeInt ##
+twnew$AgeInt<-ifelse(twnew$Age==70,35,5)
 
-## cumulative cases ## 
+## change week to date of the Monday of the week by Taiwan CDC's specification, using file provided by Taiwan's CDC ## 
+wdates<-read_excel('/weekdate.xls') %>% slice(8399:n()) %>% select(-c('Year'))
+wdatesshort<-wdates[seq(1,nrow(wdates),7),]
+wdatesshort$Date<-format(as.POSIXct(wdatesshort$Date), '%d.%m.%Y') %>% lubridate::dmy()
+wdatesshort$Date<-format(as.POSIXct(wdatesshort$Date), '%d.%m.%Y')
+
+wdatesshort$Week<-paste0(substr(wdatesshort$Date,7,10),wdatesshort$Week)
+
+
+twnew<-left_join(twnew,wdatesshort, by='Week') %>% select(-c('Week')) %>% filter(!is.na(Date))
+
+## add columns for cross national comparisons ## 
+twnew$Country<-'Taiwan'
+twnew$Code<-paste0('TW',twnew$Date)
+twnew$Metric<-c('Count')
+twnew$Region<-c('All')
+l <- gather(twnew, Measure, Value, Cases, factor_key=T)
 l <-l %>% group_by(Sex, Age) %>% mutate(Value=cumsum(Value))
 
 ## COVID 19 Deaths ## 
-
-## manually add deaths (6) from news source: https://healthmedia.com.tw/main_detail.php?id=45372 ## 
-## https://www.cdc.gov.tw/Bulletin/Detail/C7SfkryzIXWf0eF_1O03hw?typeid=9 ##
-## https://www.storm.mg/article/2461485 ##
-## https://www.twreporter.org/i/covid-2019-keep-tracking-gcs ##
-
-## Case number 19 (62 male, died 25.02.20), 27 (80+ male, died 20.03.20), 34 (50+ female, 30.03.20), ##
-## Case numer 108 (40+ male), died 29.03.20), 170 (60+ male, died 29.03.20)in Taiwan, ##
-## Case number 101 (70+ male, 09.04.20, 197 (40+ male)  ## 
-## upper bound of age group used when unspecified, such as 55 for 50+ and 65 for 60+ ## 
-
-
-Region<-rep(c('All'),times=7)
-Sex<-c('m','m','f','m','m','m','m')
-Age<-c(60,70,55,45,65,70,45)
-Deaths<-rep(c(1), times=7)
-AgeInt<-c(5,35,5,5,5,35,5)
-Date<-c('02.03.2020','16.03.2020','30.03.2020','23.03.2020','23.03.2020','06.04.2020','04.05.2020')
-Country<-rep(c('Taiwan'),times=7)
-Code<-paste0('TW',Date)
-Metric<-rep(c('Count'), times=7)
-
-mort<-data.frame(Region,Sex,Age,Deaths,AgeInt,Date,Country,Code,Metric)
-
-
-## cannot expand this by region, because we do not have region level data for deaths. See translate_noregion.r for country level expansion## 
-
-l2<-gather(mort,Measure,Value,Deaths,factor_key =T)
-
-## cumulative deaths ## 
-l2 <-l2 %>% group_by(Sex, Age) %>% mutate(Value=cumsum(Value))
-
-## glue l and l2 together ## 
-lall<-rbind(l,l2)
-
-## re-order columns ##
-colorder<-c('Country','Region','Code','Date','Sex','Age','AgeInt','Metric','Measure','Value')
-lall<-lall[,colorder]
+ 
+## To be updated pending information from Taiwan CDC ## 
