@@ -23,3 +23,10 @@ Code and source files have been updated, and one death has been added
 
 ## update 14.05.2020 ## 
 Code separated into "translate.r" (all regions for cases, no padding for deaths, 10567 rows) and "translate_noregion.r" (country level expansion for both cases and deaths, 960 rows).  Cumulative instead of daily count. 
+
+## update 01.27.2022 ## 
+Substantial increases in deaths and cases have occurred since this repository has been updated. Taiwan CDC has also moved source files. 
+Weekly cases: https://data.cdc.gov.tw/dataset/aagstable-weekly-19cov
+
+
+
